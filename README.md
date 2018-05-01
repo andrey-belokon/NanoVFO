@@ -1,16 +1,15 @@
 <h2>Nano VFO for portable TRX</h2>
 
 CPU: Arduino ProMini<br>
-PLL: Si5351<br>
-Display: OLED 0.91" 128x32, OLED 0.96" 128x64, I2C LCD 1602, MAX7219<br>
+PLL: Si5351 or/and Si570<br>
+Display: OLED 0.91" 128x32, OLED 0.96" 128x64, OLED 1.3" 128/132x64, I2C LCD 1602, MAX7219<br>
 Encoder: optical/mechanic rotary encode
 Keypad: 6 buttons
 Support different TRX architecture:<br>
- 1. Single and double IF superheterodyne.
- 2. Up-conversion with general coverage 2-30MHz and high IF.
- 3. Direct conversion with 2x or 4x output.
- 4. Direct conversion with quadrature output.
-Buitin CW key: auto/iamboc mode, 3 phrase memory, CW-VOX
+ 1. Single  IF superheterodyne.
+ 2. Direct conversion with 2x or 4x output.
+ 3. Direct conversion with quadrature output.
+Builtin CW key: auto/iamboc mode, 3 phrase memory, CW-VOX, touch mode
 
 Project homepage http://dspview.com/viewtopic.php?t=202
 Required libraries: SSD1306Ascii - install from Arduino IDE<br>

@@ -19,7 +19,12 @@
 #include "i2c.h"
 #include "TRX.h"
 #include "Encoder.h"
-#include "si5351a.h"
+#ifdef VFO_SI5351
+  #include "si5351a.h"
+#endif
+#ifdef VFO_SI570  
+  #include "Si570.h"
+#endif
 
 #ifdef DISPLAY_MAX7219
   #include "disp_MAX7219.h"
@@ -33,8 +38,17 @@
 #ifdef DISPLAY_OLED128x64
   #include "disp_OLED128x64.h"
 #endif
+#ifdef DISPLAY_OLED_SH1106_128x64
+  #include "disp_OLED_SH1106_128x64.h"
+#endif
 
-Si5351 vfo5351;
+#ifdef VFO_SI5351
+  Si5351 vfo5351;
+#endif
+#ifdef VFO_SI570  
+  Si570 vfo570;
+#endif
+
 Encoder encoder(ENCODER_PULSE_PER_TURN, ENCODER_FREQ_LO_STEP, ENCODER_FREQ_HI_STEP, ENCODER_FREQ_HI_LO_TRASH);
 TRX trx;
 
@@ -49,6 +63,9 @@ TRX trx;
 #endif
 #ifdef DISPLAY_OLED128x64
   Display_OLED128x64 disp;
+#endif
+#ifdef DISPLAY_OLED_SH1106_128x64
+  Display_OLED_SH1106_128x64 disp;
 #endif
 
 InputPullUpPin inPTT(PIN_IN_PTT);
@@ -115,6 +132,7 @@ void setup()
   pinMode(PIN_IN_DIT, INPUT);
   pinMode(PIN_IN_DAH, INPUT);
   i2c_init();
+#ifdef VFO_SI5351
   // change for required output level
   vfo5351.setup(
     SI5351_CLK0_DRIVE,
@@ -122,6 +140,10 @@ void setup()
     SI5351_CLK2_DRIVE
   );
   vfo5351.set_xtal_freq((SI5351_CALIBRATION/10000)*10000+Settings[ID_SI5351_XTAL]);
+#endif  
+#ifdef VFO_SI570  
+  vfo570.setup(SI570_CALIBRATION);
+#endif  
   encoder.setup();
   disp.setup();
 }
@@ -327,8 +349,15 @@ void cwTXOn()
 void edit_item(uint8_t mi)
 {
   int val = Settings[mi];
+  if (SettingsDef[mi].id == 99) {
+    #ifdef VFO_SI5351
+      vfo5351.out_calibrate_freq();
+    #endif
+    #ifdef VFO_SI570
+      vfo570.out_calibrate_freq();
+    #endif
+  }
   disp.DrawMenu(SettingsDef[mi].id,SettingsDef[mi].title,val,1);
-  if (SettingsDef[mi].id == 99) vfo5351.out_calibrate_freq();
   keypad.waitUnpress();
   while (readDit() || readDah()) ;
   while (1) {
@@ -340,7 +369,9 @@ void edit_item(uint8_t mi)
         // save value
         Settings[mi] = val;
         writeSettings();
-        if (SettingsDef[mi].id == 99) vfo5351.set_xtal_freq((SI5351_CALIBRATION/10000)*10000+Settings[ID_SI5351_XTAL]);
+        #ifdef VFO_SI5351
+          if (SettingsDef[mi].id == 99) vfo5351.set_xtal_freq((SI5351_CALIBRATION/10000)*10000+Settings[ID_SI5351_XTAL]);
+        #endif
         return;
         break;
       case 2:
@@ -402,14 +433,14 @@ void show_menu()
 
 void loop()
 {
-  if (first_call && (keypad.Read() == 1) || readDit() || readDah()) {
+  if (first_call && (keypad.Read() == 1) || (readDit() && !readDah()) || (!readDit() && readDah())) {
     // show menu on startup
     show_menu();
     keypad.waitUnpress();
     while (readDit() || readDah()) ;
   }
   first_call = 0;
-  
+    
   if (millis()-last_pool > POOL_INTERVAL) {
     last_pool = millis();
     uint8_t key = keypad.Read();

@@ -1,6 +1,19 @@
 void vfo_set_freq(long f1, long f2, long f3)
 {
-  vfo5351.set_freq(f1,f2,f3);
+#ifdef VFO_SI570  
+  #ifdef VFO_SI5351
+    vfo570.set_freq(f1);
+    vfo5351.set_freq(f2,f3,0);
+  #else
+    // single Si570
+    if (f1 != 0) vfo570.set_freq(f1);
+    else vfo570.set_freq(f3);
+  #endif
+#else
+  #ifdef VFO_SI5351
+    vfo5351.set_freq(f1,f2,f3);
+  #endif
+#endif
 }
 
 void UpdateFreq() 
