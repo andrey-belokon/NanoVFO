@@ -2,6 +2,9 @@
 Номер версии указан в начале NanoVFO.ino
 =======================================
 
+v.1.2 from 2.06.2018
+bugfix - enter to menu then press key
+
 v.1.1 from 1.06.2018
 added support for Si570, SH1106 (1.3" OLED)
 

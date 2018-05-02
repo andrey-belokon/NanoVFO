@@ -433,7 +433,7 @@ void show_menu()
 
 void loop()
 {
-  if (first_call && (keypad.Read() == 1) || (readDit() && !readDah()) || (!readDit() && readDah())) {
+  if (first_call && (keypad.Read() == 1) && ((readDit() && !readDah()) || (!readDit() && readDah()))) {
     // show menu on startup
     show_menu();
     keypad.waitUnpress();
