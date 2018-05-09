@@ -53,18 +53,32 @@
 #define BAND_ACTIVE_LEVEL_HIGH
 //#define BAND_ACTIVE_LEVEL_LOW
 
-// количество импульсов на оборот примененного энкодера
-// 360-400 for optic encoders and 20 for mechanic
-//#define ENCODER_PULSE_PER_TURN    360
-#define ENCODER_PULSE_PER_TURN    20
+// раскоментировать ТОЛЬКО ОДИН требуемый тип энкодера. закоментировать все если нет
+//#define ENCODER_OPTICAL
+#define ENCODER_MECHANIC
+
+#if defined(ENCODER_OPTICAL) && defined(ENCODER_MECHANIC)
+  #error You need select single encoder
+#endif
+
 // изменение частоты в Гц на один оборот в обычном режиме
-#define ENCODER_FREQ_LO_STEP      2000
+#define ENCODER_FREQ_LO_STEP      3000
 // изменение частоты в Гц на один оборот в ускоренном режиме
-#define ENCODER_FREQ_HI_STEP      12000
+#define ENCODER_FREQ_HI_STEP      15000
 // порог переключения в ускоренный режим. если частота изменится более
 // чем на ENCODER_FREQ_HI_LO_TRASH Гц за секунду то переходим в ускоренный режим
-// 8000 for optic encoders and 600 for mechanic
-//#define ENCODER_FREQ_HI_LO_TRASH  8000
-#define ENCODER_FREQ_HI_LO_TRASH  600
+#define ENCODER_FREQ_HI_LO_TRASH  2000
+
+#ifdef ENCODER_OPTICAL
+#define ENCODER_ENABLE
+// количество импульсов на оборот примененного оптического энкодера
+#define ENCODER_PULSE_PER_TURN    360
+#endif
+
+#ifdef ENCODER_MECHANIC
+#define ENCODER_ENABLE
+// количество импульсов на оборот примененного механического энкодера
+#define ENCODER_PULSE_PER_TURN    20
+#endif
 
 #endif

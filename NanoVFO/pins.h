@@ -12,18 +12,9 @@ class InputPullUpPin {
 	  uint8_t last;
 	  long last_tm;
   public:
-    InputPullUpPin(uint8_t _pin):pin(_pin),last(false),last_tm(-1000) {}
+    InputPullUpPin(uint8_t _pin):pin(_pin),last(false),last_tm(0) {}
     void setup();
     uint8_t Read();
-};
-
-// pin with bouncing, pull up and trigger to high-to-low front
-class InputPullUpTriggerPin: public InputPullUpPin {
-  private:
-    uint8_t state;
-  public:
-    InputPullUpTriggerPin(uint8_t _pin): InputPullUpPin(_pin), state(0) {}
-    uint8_t isOn();
 };
 
 // return raw ADC result for internal 1.1v voltage reference
@@ -64,7 +55,6 @@ class OutputBinPin {
 	  pin(_pin),active_level(_active_level),def_value(_def_value),state(0xFF) {}
     void setup();
     void Write(uint8_t value);
-    uint8_t getState() { return state; }
 };
 
 class OutputPCF8574 {

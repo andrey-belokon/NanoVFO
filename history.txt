@@ -2,6 +2,13 @@
 Номер версии указан в начале NanoVFO.ino
 =======================================
 
+v.2.0 from 11.04.2020
+Save current freq/band to EEPROM and restore on star
+Improved encoder unit. 4x increase pulses for mechanical encoder
+New Si5351 library
+Change power to 5v without I2C level conversion
+Many minor bugfixes
+
 v.1.2 from 2.06.2018
 bugfix - enter to menu then press key
 

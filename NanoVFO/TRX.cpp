@@ -81,3 +81,55 @@ uint8_t TRX::setCWSpeed(uint8_t speed, int dash_ratio)
   return 0;
 }
 
+struct TRXState {
+  long BandData[BAND_COUNT+1]; 
+  int BandIndex;
+  long Freq;
+};
+
+uint16_t hash_data(uint16_t hval, uint8_t* data, int sz)
+{
+  while (sz--) {
+    hval ^= *data++;
+    hval = (hval << 11) | (hval >> 5);
+  }
+  return hval;
+}  
+
+uint16_t TRX::StateHash()
+{
+  uint16_t hash = 0x5AC3;
+  hash = hash_data(hash,(uint8_t*)BandData,sizeof(BandData));
+  hash = hash_data(hash,(uint8_t*)&BandIndex,sizeof(BandIndex));
+  hash = hash_data(hash,(uint8_t*)&Freq,sizeof(Freq));
+  return hash;
+}
+
+struct TRXState EEMEM eeState;
+uint16_t EEMEM eeStateVer;
+#define STATE_VER 0x5F17
+
+void TRX::StateSave()
+{
+  struct TRXState st;
+  for (byte i=0; i <= BAND_COUNT+1; i++)
+    st.BandData[i] = BandData[i];
+  st.BandIndex = BandIndex;
+  st.Freq = Freq;
+  eeprom_write_block(&st, &eeState, sizeof(st));
+  eeprom_write_word(&eeStateVer, STATE_VER);
+}
+
+void TRX::StateLoad()
+{
+  struct TRXState st;
+  uint16_t ver;
+  ver = eeprom_read_word(&eeStateVer);
+  if (ver == STATE_VER) {
+    eeprom_read_block(&st, &eeState, sizeof(st));
+    for (byte i=0; i <= BAND_COUNT+1; i++)
+      BandData[i] = st.BandData[i];
+    SwitchToBand(st.BandIndex);
+    Freq = st.Freq;
+  }
+}

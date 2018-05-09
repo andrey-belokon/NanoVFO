@@ -1,7 +1,7 @@
 //
 // UR5FFR Si5351 NanoVFO
-// v1.0 from 2.04.2018
-// Copyright (c) Andrey Belokon, 2017-2018 Odessa
+// v2.0 from 11.04.2020
+// Copyright (c) Andrey Belokon, 2017-2020 Odessa
 // https://github.com/andrey-belokon/
 // GNU GPL license
 // Special thanks for
@@ -16,14 +16,15 @@
 #include "config.h"
 
 #include "pins.h"
-#include "i2c.h"
+#include <i2c.h>
 #include "TRX.h"
 #include "Encoder.h"
+
 #ifdef VFO_SI5351
-  #include "si5351a.h"
+  #include <si5351a.h>
 #endif
 #ifdef VFO_SI570  
-  #include "Si570.h"
+  #include <Si570.h>
 #endif
 
 #ifdef DISPLAY_MAX7219
@@ -49,7 +50,7 @@
   Si570 vfo570;
 #endif
 
-Encoder encoder(ENCODER_PULSE_PER_TURN, ENCODER_FREQ_LO_STEP, ENCODER_FREQ_HI_STEP, ENCODER_FREQ_HI_LO_TRASH);
+Encoder encoder;
 TRX trx;
 
 #ifdef DISPLAY_MAX7219
@@ -113,8 +114,10 @@ void readSettings()
 
 void setup()
 {
-  clock_prescale_set(clock_div_2);
-  //Serial.begin(9600);
+  // раскоментарить в случае использования ProMini328 с кварцем на 16МГц при питании пониженном до 3.3в
+  // подробнее http://dspview.com/viewtopic.php?f=24&t=201
+  // clock_prescale_set(clock_div_2);
+
   readSettings();
   outCW.setup();
   outPTT.setup();
@@ -133,6 +136,7 @@ void setup()
   pinMode(PIN_IN_DAH, INPUT);
   i2c_init();
 #ifdef VFO_SI5351
+  vfo5351.VCOFreq_Max = 800000000; // для использования "кривых" SI-шек с нестабильной генерацией
   // change for required output level
   vfo5351.setup(
     SI5351_CLK0_DRIVE,
@@ -144,8 +148,9 @@ void setup()
 #ifdef VFO_SI570  
   vfo570.setup(SI570_CALIBRATION);
 #endif  
-  encoder.setup();
+  encoder.Setup();
   disp.setup();
+  trx.StateLoad();
 }
 
 #include "freq_calc.h"
@@ -423,10 +428,14 @@ void show_menu()
       if (mi == 0) mi = SETTINGS_COUNT-1;
       else mi--;
       disp.DrawMenu(SettingsDef[mi].id,SettingsDef[mi].title,Settings[mi],0);
+      delay(300);
+      encoder.GetDelta();
     } else if (d > 0) {
       mi++;
       if (mi >= SETTINGS_COUNT) mi = 0;
       disp.DrawMenu(SettingsDef[mi].id,SettingsDef[mi].title,Settings[mi],0);
+      delay(300);
+      encoder.GetDelta();
     }
   }
 }
@@ -441,6 +450,12 @@ void loop()
   }
   first_call = 0;
     
+  long delta = encoder.GetDelta();
+  if (delta) {
+    trx.ChangeFreq(delta);
+    power_save(0);
+  }
+
   if (millis()-last_pool > POOL_INTERVAL) {
     last_pool = millis();
     uint8_t key = keypad.Read();
@@ -484,12 +499,6 @@ void loop()
       last_key = 0;
     }
   
-    long delta = encoder.GetDelta();
-    if (delta) {
-      trx.ChangeFreq(delta);
-      power_save(0);
-    }
-
     readCWSpeed();
     
     trx.TX = trx.CWTX || inPTT.Read();
@@ -551,5 +560,23 @@ void loop()
     outPTT.Write(trx.TX);
     if (!trx.TX)
       UpdateFreq();
- }
+  }
+  
+  static long state_poll_tm = 0;
+  if (millis()-state_poll_tm > 500) {
+    static uint16_t state_hash = 0;
+    static uint8_t state_changed = false;
+    static long state_changed_tm = 0;
+    uint16_t new_state_hash = trx.StateHash();
+    if (new_state_hash != state_hash) {
+      state_hash = new_state_hash;
+      state_changed = true;
+      state_changed_tm = millis();
+    } else if (state_changed && (millis()-state_changed_tm > 5000)) {
+      // save state
+      trx.StateSave();
+      state_changed = false;
+    }
+    state_poll_tm = millis();
+  }
 }

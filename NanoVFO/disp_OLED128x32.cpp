@@ -113,4 +113,3 @@ void Display_OLED128x32::clear()
   last_wpm=0;
   last_cw=0xFF;
 }
-
