@@ -1,6 +1,6 @@
 //
 // UR5FFR Si5351 NanoVFO
-// v2.0 from 11.04.2020
+// v2.1 from 28.06.2020
 // Copyright (c) Andrey Belokon, 2017-2020 Odessa
 // https://github.com/andrey-belokon/
 // GNU GPL license
@@ -75,7 +75,8 @@ OutputBinPin outCW(PIN_OUT_CW, !OUT_CW_ACTIVE_LEVEL, OUT_CW_ACTIVE_LEVEL);
 OutputBinPin outPTT(PIN_OUT_PTT, !OUT_PTT_ACTIVE_LEVEL, OUT_PTT_ACTIVE_LEVEL);
 OutputBinPin outKEY(PIN_OUT_KEY, !OUT_KEY_ACTIVE_LEVEL, OUT_KEY_ACTIVE_LEVEL);
 
-InputAnalogKeypad keypad(PIN_ANALOG_KEYPAD, 6);
+uint16_t KeyLevels[] = {150,300,450,600,780,900};
+InputAnalogKeypad keypad(PIN_ANALOG_KEYPAD, 6, KeyLevels);
 
 struct _Settings SettingsDef[SETTINGS_COUNT] = {
   SETTINGS_DATA
@@ -151,6 +152,7 @@ void setup()
   encoder.Setup();
   disp.setup();
   trx.StateLoad();
+  analogReference(DEFAULT);
 }
 
 #include "freq_calc.h"

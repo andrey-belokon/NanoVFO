@@ -27,8 +27,14 @@ uint8_t InputAnalogKeypad::Read()
 {
   if (pin == PIN_NC) return 0;
   if ((millis()-last_tm) < 50) return last;
-  uint16_t val = analogRead(pin);
-  val = 1 + (val + (vstep >> 1)) / vstep;
+  uint16_t aval = 1024;
+  for (byte i=5; i > 0; i--) {
+    uint16_t v = analogRead(pin);
+    if (v < aval) aval = v;
+  }
+  uint8_t val=0;
+  while (aval > levels[val] && val < btn_cnt) val++;
+  val++;
   if (val > btn_cnt) val = 0;
   if (val != last) {
     last = val;

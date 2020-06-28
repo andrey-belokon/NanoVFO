@@ -37,11 +37,11 @@ class InputAnalogKeypad {
   private:
     uint8_t pin;
     uint8_t btn_cnt;
-    uint16_t vstep;
+    int16_t *levels;
     uint8_t last;
     long last_tm;
   public:
-    InputAnalogKeypad(uint8_t _pin, uint8_t _btn_cnt): pin(_pin), btn_cnt(_btn_cnt), vstep(1024/_btn_cnt), last_tm(-1000) {}
+    InputAnalogKeypad(uint8_t _pin, uint8_t _btn_cnt, int16_t *_levels): pin(_pin), btn_cnt(_btn_cnt), levels(_levels), last_tm(-1000) {}
     void setup();
     uint8_t Read();
     void waitUnpress();
