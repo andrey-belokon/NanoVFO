@@ -62,7 +62,7 @@ struct _Settings {
   \
   {41, 0, -10000, 10000, 10, "LSB SHIFT"},    /* доп.сдвиг второго гетеродина относительно констант SSBDetectorFreq_LSB/SSBDetectorFreq_USB */ \
   {42, 0, -10000, 10000, 10, "USB SHIFT"}, \
-  {99, 3000, -20000, 20000, 5, "SI5351 XTAL"}, \
+  {99, 0, -20000, 20000, 5, "SI5351 XTAL"}, \
   {0, 0, 0, 0, 0, "FULL RESET"}
 
 // increase for reset stored to EEPROM settings values to default
